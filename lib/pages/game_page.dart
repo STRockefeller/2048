@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class GamePage extends StatefulWidget {
   @override
@@ -11,12 +12,14 @@ enum Direction { up, down, left, right }
 
 class _GamePageState extends State<GamePage> {
   List<List<int>> grid = List.generate(4, (_) => List.generate(4, (_) => 0));
+  FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _addNewNumber();
     _addNewNumber();
+    _focusNode.requestFocus();
   }
 
   List<Point<int>> _getEmptyCells() {
@@ -136,54 +139,72 @@ class _GamePageState extends State<GamePage> {
       appBar: AppBar(
         title: const Text('2048'),
       ),
-      body: GestureDetector(
-        onPanEnd: (details) {
-          const threshold = 20;
-          final dx = details.velocity.pixelsPerSecond.dx;
-          final dy = details.velocity.pixelsPerSecond.dy;
-
-          if (dx.abs() > dy.abs()) {
-            if (dx > threshold) {
-              _move(Direction.right);
-            } else if (dx < -threshold) {
+      body: Focus(
+        focusNode: _focusNode,
+        onKeyEvent: (node, event) {
+          if (event is KeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
               _move(Direction.left);
-            }
-          } else {
-            if (dy > threshold) {
-              _move(Direction.down);
-            } else if (dy < -threshold) {
+            } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+              _move(Direction.right);
+            } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
               _move(Direction.up);
+            } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+              _move(Direction.down);
             }
           }
+          return KeyEventResult.handled;
         },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(4, (row) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(4, (col) {
-                return Container(
-                  margin: EdgeInsets.all(4.0),
-                  width: 70.0,
-                  height: 70.0,
-                  decoration: BoxDecoration(
-                    color:
-                        grid[row][col] == 0 ? Colors.grey[300] : Colors.orange,
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Center(
-                    child: Text(
-                      grid[row][col] == 0 ? '' : '${grid[row][col]}',
-                      style: const TextStyle(
-                        fontSize: 24.0,
-                        fontWeight: FontWeight.bold,
+        child: GestureDetector(
+          onPanEnd: (details) {
+            final threshold = 20; // 設定一個閾值，用來判斷滑動距離
+            final dx = details.velocity.pixelsPerSecond.dx;
+            final dy = details.velocity.pixelsPerSecond.dy;
+
+            if (dx.abs() > dy.abs()) {
+              if (dx > threshold) {
+                _move(Direction.right);
+              } else if (dx < -threshold) {
+                _move(Direction.left);
+              }
+            } else {
+              if (dy > threshold) {
+                _move(Direction.down);
+              } else if (dy < -threshold) {
+                _move(Direction.up);
+              }
+            }
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(4, (row) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(4, (col) {
+                  return Container(
+                    margin: const EdgeInsets.all(4.0),
+                    width: 70.0,
+                    height: 70.0,
+                    decoration: BoxDecoration(
+                      color: grid[row][col] == 0
+                          ? Colors.grey[300]
+                          : Colors.orange,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Center(
+                      child: Text(
+                        grid[row][col] == 0 ? '' : '${grid[row][col]}',
+                        style: const TextStyle(
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }),
-            );
-          }),
+                  );
+                }),
+              );
+            }),
+          ),
         ),
       ),
     );
