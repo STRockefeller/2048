@@ -13,6 +13,7 @@ enum Direction { up, down, left, right }
 class _GamePageState extends State<GamePage> {
   List<List<int>> grid = List.generate(4, (_) => List.generate(4, (_) => 0));
   FocusNode _focusNode = FocusNode();
+  int _score = 0;
 
   @override
   void initState() {
@@ -53,6 +54,7 @@ class _GamePageState extends State<GamePage> {
     for (int i = 0; i < newRow.length - 1; i++) {
       if (newRow[i] == newRow[i + 1]) {
         newRow[i] *= 2;
+        _score += newRow[i];
         newRow[i + 1] = 0;
       }
     }
@@ -177,33 +179,43 @@ class _GamePageState extends State<GamePage> {
           },
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(4, (row) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(4, (col) {
-                  return Container(
-                    margin: const EdgeInsets.all(4.0),
-                    width: 70.0,
-                    height: 70.0,
-                    decoration: BoxDecoration(
-                      color: grid[row][col] == 0
-                          ? Colors.grey[300]
-                          : Colors.orange,
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Center(
-                      child: Text(
-                        grid[row][col] == 0 ? '' : '${grid[row][col]}',
-                        style: const TextStyle(
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.bold,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Score: $_score', // 顯示分數
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ...List.generate(4, (row) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(4, (col) {
+                    return Container(
+                      margin: const EdgeInsets.all(4.0),
+                      width: 70.0,
+                      height: 70.0,
+                      decoration: BoxDecoration(
+                        color: grid[row][col] == 0
+                            ? Colors.grey[300]
+                            : Colors.orange,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: Center(
+                        child: Text(
+                          grid[row][col] == 0 ? '' : '${grid[row][col]}',
+                          style: const TextStyle(
+                            fontSize: 24.0,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                }),
-              );
-            }),
+                    );
+                  }),
+                );
+              }),
+            ],
           ),
         ),
       ),
