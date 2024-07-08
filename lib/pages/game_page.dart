@@ -154,73 +154,94 @@ class _GamePageState extends State<GamePage> {
       appBar: AppBar(
         title: const Text('2048'),
       ),
-      body: Focus(
-        focusNode: _focusNode,
-        onKeyEvent: (node, event) {
-          if (event is KeyDownEvent) {
-            if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-              _move(Direction.left);
-            } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+      body: GestureDetector(
+        onPanEnd: (details) {
+          final threshold = 20;
+          final dx = details.velocity.pixelsPerSecond.dx;
+          final dy = details.velocity.pixelsPerSecond.dy;
+
+          if (dx.abs() > dy.abs()) {
+            if (dx > threshold) {
               _move(Direction.right);
-            } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-              _move(Direction.up);
-            } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+            } else if (dx < -threshold) {
+              _move(Direction.left);
+            }
+          } else {
+            if (dy > threshold) {
               _move(Direction.down);
+            } else if (dy < -threshold) {
+              _move(Direction.up);
             }
           }
-          return KeyEventResult.handled;
         },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Score: $_score', // 顯示當前分數
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        child: Focus(
+          focusNode: _focusNode,
+          onKeyEvent: (node, event) {
+            if (event is KeyDownEvent) {
+              if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                _move(Direction.left);
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+                _move(Direction.right);
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                _move(Direction.up);
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                _move(Direction.down);
+              }
+            }
+            return KeyEventResult.handled;
+          },
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Score: $_score',
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'High Score: $_highScore', // 顯示最高分數
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'High Score: $_highScore',
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-            ElevatedButton(
-              onPressed: _resetGame,
-              child: const Text('Retry'), // 重試按鈕
-            ),
-            ...List.generate(4, (row) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(4, (col) {
-                  return Container(
-                    margin: const EdgeInsets.all(4.0),
-                    width: 70.0,
-                    height: 70.0,
-                    decoration: BoxDecoration(
-                      color: grid[row][col] == 0
-                          ? Colors.grey[300]
-                          : Colors.orange,
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Center(
-                      child: Text(
-                        grid[row][col] == 0 ? '' : '${grid[row][col]}',
-                        style: const TextStyle(
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.bold,
+              ElevatedButton(
+                onPressed: _resetGame,
+                child: const Text('Retry'),
+              ),
+              ...List.generate(4, (row) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(4, (col) {
+                    return Container(
+                      margin: const EdgeInsets.all(4.0),
+                      width: 70.0,
+                      height: 70.0,
+                      decoration: BoxDecoration(
+                        color: grid[row][col] == 0
+                            ? Colors.grey[300]
+                            : Colors.orange,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: Center(
+                        child: Text(
+                          grid[row][col] == 0 ? '' : '${grid[row][col]}',
+                          style: const TextStyle(
+                            fontSize: 24.0,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                }),
-              );
-            }),
-          ],
+                    );
+                  }),
+                );
+              }),
+            ],
+          ),
         ),
       ),
     );
