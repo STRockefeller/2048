@@ -14,6 +14,7 @@ class _GamePageState extends State<GamePage> {
   List<List<int>> grid = List.generate(4, (_) => List.generate(4, (_) => 0));
   FocusNode _focusNode = FocusNode();
   int _score = 0;
+  int _highScore = 0;
 
   @override
   void initState() {
@@ -55,6 +56,9 @@ class _GamePageState extends State<GamePage> {
       if (newRow[i] == newRow[i + 1]) {
         newRow[i] *= 2;
         _score += newRow[i];
+        if (_score > _highScore) {
+          _highScore = _score;
+        }
         newRow[i + 1] = 0;
       }
     }
@@ -135,6 +139,15 @@ class _GamePageState extends State<GamePage> {
     });
   }
 
+  void _resetGame() {
+    setState(() {
+      grid = List.generate(4, (_) => List.generate(4, (_) => 0));
+      _score = 0;
+      _addNewNumber();
+      _addNewNumber();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -157,66 +170,57 @@ class _GamePageState extends State<GamePage> {
           }
           return KeyEventResult.handled;
         },
-        child: GestureDetector(
-          onPanEnd: (details) {
-            final threshold = 20; // 設定一個閾值，用來判斷滑動距離
-            final dx = details.velocity.pixelsPerSecond.dx;
-            final dy = details.velocity.pixelsPerSecond.dy;
-
-            if (dx.abs() > dy.abs()) {
-              if (dx > threshold) {
-                _move(Direction.right);
-              } else if (dx < -threshold) {
-                _move(Direction.left);
-              }
-            } else {
-              if (dy > threshold) {
-                _move(Direction.down);
-              } else if (dy < -threshold) {
-                _move(Direction.up);
-              }
-            }
-          },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  'Score: $_score', // 顯示分數
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold),
-                ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Score: $_score', // 顯示當前分數
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              ...List.generate(4, (row) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(4, (col) {
-                    return Container(
-                      margin: const EdgeInsets.all(4.0),
-                      width: 70.0,
-                      height: 70.0,
-                      decoration: BoxDecoration(
-                        color: grid[row][col] == 0
-                            ? Colors.grey[300]
-                            : Colors.orange,
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: Center(
-                        child: Text(
-                          grid[row][col] == 0 ? '' : '${grid[row][col]}',
-                          style: const TextStyle(
-                            fontSize: 24.0,
-                            fontWeight: FontWeight.bold,
-                          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'High Score: $_highScore', // 顯示最高分數
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: _resetGame,
+              child: const Text('Retry'), // 重試按鈕
+            ),
+            ...List.generate(4, (row) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(4, (col) {
+                  return Container(
+                    margin: const EdgeInsets.all(4.0),
+                    width: 70.0,
+                    height: 70.0,
+                    decoration: BoxDecoration(
+                      color: grid[row][col] == 0
+                          ? Colors.grey[300]
+                          : Colors.orange,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Center(
+                      child: Text(
+                        grid[row][col] == 0 ? '' : '${grid[row][col]}',
+                        style: const TextStyle(
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    );
-                  }),
-                );
-              }),
-            ],
-          ),
+                    ),
+                  );
+                }),
+              );
+            }),
+          ],
         ),
       ),
     );
